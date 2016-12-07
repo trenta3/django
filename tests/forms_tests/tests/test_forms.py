@@ -17,7 +17,7 @@ from django.forms import (
     SplitDateTimeField, SplitHiddenDateTimeWidget, Textarea, TextInput,
     TimeField, ValidationError, forms,
 )
-from django.forms.renderers import TemplateRenderer, get_default_renderer
+from django.forms.renderers import DjangoTemplates, get_default_renderer
 from django.forms.utils import ErrorList
 from django.http import QueryDict
 from django.template import Context, Template
@@ -3621,7 +3621,7 @@ Good luck picking a username that doesn&#39;t already exist.</p>
         self.assertEqual(f.cleaned_data, {'data': 'xyzzy'})
 
 
-class CustomRenderer(TemplateRenderer):
+class CustomRenderer(DjangoTemplates):
     pass
 
 
@@ -3643,7 +3643,7 @@ class RendererTests(SimpleTestCase):
 
     def test_attribute_instance(self):
         class CustomForm(Form):
-            default_renderer = TemplateRenderer()
+            default_renderer = DjangoTemplates()
 
         form = CustomForm()
         self.assertEqual(form.renderer, CustomForm.default_renderer)
@@ -3657,7 +3657,7 @@ class RendererTests(SimpleTestCase):
 
     def test_attribute_override(self):
         class CustomForm(Form):
-            default_renderer = TemplateRenderer()
+            default_renderer = DjangoTemplates()
 
         custom = CustomRenderer()
         form = CustomForm(renderer=custom)
