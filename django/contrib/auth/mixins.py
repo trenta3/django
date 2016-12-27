@@ -114,3 +114,37 @@ class UserPassesTestMixin(AccessMixin):
         if not user_test_result:
             return self.handle_no_permission()
         return super(UserPassesTestMixin, self).dispatch(request, *args, **kwargs)
+
+class ObjectStatusMixin (AccessMixin):
+    """
+    CBV mixin which verifies that the current object is in the correct
+    state to be accessed.
+    """
+    object_status_check = None
+
+    def get_object_status_check (self):
+        """
+        Override this method to override the object_status_check
+        attribute. Must return a lambda.
+        """
+        if self.object_status_check is None:
+            raise ImproperlyConfigured('{0} is missing the object_status_check attribute. Define {0}.object_status_check, or override {0}.get_object_status_check().'.format(self.__class__.__name__))
+
+        return self.object_status_check
+
+    def has_status(self):
+        """
+        Override this method to customize the way permissions are checked.
+        """
+        if isinstance(self, SingleObjectMixin):
+            return self.get_object_status_check()(self.get_object())
+        elif isinstance(self, MultipleObjectMixin):
+            return self.get_object_status_check()(self.get_queryset())
+        else:
+            raise ImproperlyConfigured('{0} is not an instance of class SingleObjectMixin or of class MultipleObjectMixin.'.format(self.__class__.__name__))
+        
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_status():
+            return self.handle_no_permission()
+        return super(ObjectStatusMixin, self).dispatch(request, *args, **kwargs)
+
